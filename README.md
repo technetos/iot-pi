@@ -1,5 +1,5 @@
-Rusty IoT Pi
+# Rusty IoT Pi
 
-An internet of things project running on a Pi 2
+> An internet of things project running on a Pi 2
 
 

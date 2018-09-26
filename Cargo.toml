@@ -1,0 +1,8 @@
+[package]
+name = "rusty-iot-pi"
+version = "0.1.0"
+authors = ["technetos <mrgould93@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+sysfs_gpio = "0.5.3"

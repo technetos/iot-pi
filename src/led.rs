@@ -1,16 +1,36 @@
-use sysfs_gpio::{Direction, Pin};
+use rppal::{
+    gpio::{Gpio, Level, Mode, PullUpDown, Trigger},
+    pwm::{Channel, Polarity, Pwm},
+    system::DeviceInfo,
+};
 
-pub struct Led;
+use std::{
+    sync::{mpsc, Arc, Mutex},
+    thread::{self, sleep},
+    time::Duration,
+};
 
-impl Led {
-    pub fn new(id: u64) -> Pin {
-        let pin = Pin::new(id);
-        let _ = pin.export().expect("Failed to export Button pin");
-        pin
+pub struct Blink {
+    pwm: Pwm,
+}
+
+impl Blink {
+    pub fn new() -> Self {
+        Self {
+          pwm: Pwm::new(Channel::Pwm0).expect("failed on pwm"),
+        }
     }
 
-    pub fn direction(pin: &Pin) {
-        pin.set_direction(Direction::Out)
-            .expect("Failed to set Led direction");
+    pub fn configure(&self) {
+      self.pwm.set_period(Duration::from_millis(1000));
+      self.pwm.set_duty_cycle(Duration::from_millis(500));
+      self.pwm.enable();
+
+      println!("{:#?}", self.pwm.duty_cycle());
     }
+
+    pub fn execute(&self, time: u64) {
+        sleep(Duration::from_millis(time));
+    }
+
 }

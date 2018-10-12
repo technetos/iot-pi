@@ -23,7 +23,7 @@ macro_rules! gpio {
     };
 }
 
-macro_rules! id {
+macro_rules! pin {
     ($pin_id:expr) => {
         $pin_id as u8
     };
@@ -35,8 +35,6 @@ macro_rules! t {
   };
 }
 
-mod led;
-
 fn print_info() {
     let device_info = DeviceInfo::new().unwrap();
     println!(
@@ -47,21 +45,21 @@ fn print_info() {
 }
 
 fn setup() {
-    gpio!().set_mode(id!(17), Mode::Output); // PWM is 4
-    gpio!().set_mode(id!(2), Mode::Input);
-    gpio!().set_pullupdown(id!(2), PullUpDown::PullDown);
+    gpio!().set_mode(pin!(17), Mode::Output); // PWM is 4
+    gpio!().set_mode(pin!(2), Mode::Input);
+    gpio!().set_pullupdown(pin!(2), PullUpDown::PullDown);
 }
 
 fn main() {
     print_info();
     setup();
 
-    gpio!().set_async_interrupt(id!(2), Trigger::FallingEdge, |level: Level| {
+    gpio!().set_async_interrupt(pin!(2), Trigger::FallingEdge, |level: Level| {
         println!("{:#?}", level);
         if level == Level::Low {
-            gpio!().write(id!(4), Level::High);
+            gpio!().write(pin!(4), Level::High);
             sleep(Duration::from_millis(100));
-            gpio!().write(id!(4), Level::Low);
+            gpio!().write(pin!(4), Level::Low);
         }
     });
 
@@ -70,9 +68,9 @@ fn main() {
 
     loop {
       for i in &times {
-        gpio!().write(id!(17), Level::High);
+        gpio!().write(pin!(17), Level::High);
         sleep(t!(*i));
-        gpio!().write(id!(17), Level::Low);
+        gpio!().write(pin!(17), Level::Low);
         sleep(t!(*i));
       }
     }

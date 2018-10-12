@@ -15,12 +15,19 @@ extern crate lazy_static;
 
 lazy_static! {
     static ref GPIO: Mutex<Gpio> = Mutex::new(Gpio::new().unwrap());
+    static ref TIMER: Mutex<PauseLoop> = Mutex::new(PauseLoop::new());
 }
 
 macro_rules! gpio {
     () => {
         GPIO.lock().unwrap()
     };
+}
+
+macro_rules! timer {
+  () => {
+    TIMER.lock().unwrap()
+  };
 }
 
 macro_rules! pin {
@@ -50,28 +57,69 @@ fn setup() {
     gpio!().set_pullupdown(pin!(2), PullUpDown::PullDown);
 }
 
-fn main() {
-    print_info();
-    setup();
+struct PauseLoop {
+  times: Vec<u64>,
+  index: usize,
+  paused: bool,
+}
 
-    gpio!().set_async_interrupt(pin!(2), Trigger::FallingEdge, |level: Level| {
-        println!("{:#?}", level);
-        if level == Level::Low {
-            gpio!().write(pin!(4), Level::High);
-            sleep(Duration::from_millis(100));
-            gpio!().write(pin!(4), Level::Low);
-        }
-    });
-
-
-    let times = vec![3000, 2000, 1000];
-
-    loop {
-      for i in &times {
-        gpio!().write(pin!(17), Level::High);
-        sleep(t!(*i));
-        gpio!().write(pin!(17), Level::Low);
-        sleep(t!(*i));
-      }
+impl PauseLoop {
+  pub fn new() -> Self {
+    Self {
+      times: vec![5000, 3000, 1500, 1000, 700],
+      index: 0,
+      paused: false,
     }
+  }
+
+  pub fn is_paused(&mut self) -> bool {
+    self.paused
+  }
+
+  pub fn pause(&mut self) {
+    self.paused = true;
+  }
+
+  pub fn start(&mut self) {
+    self.paused = false;
+  }
+
+  pub fn get_time(&mut self) -> Duration {
+    let old_index = self.index;
+
+    if self.paused {
+      return t!(self.times[old_index]);
+    }
+
+    if old_index == 4 {
+      self.index = 0;
+    } else {
+      self.index = old_index + 1;
+    }
+
+    t!(self.times[old_index])
+  }
+}
+
+fn main() {
+  print_info();
+  setup();
+
+  gpio!().set_async_interrupt(pin!(2), Trigger::FallingEdge, |level: Level| {
+    println!("{:#?}", level);
+    if timer!().is_paused() {
+      timer!().start();
+    } else {
+      timer!().pause();
+    }
+  });
+
+  loop {
+    let time = timer!().get_time();
+
+    gpio!().write(pin!(17), Level::High);
+    sleep(time);
+    gpio!().write(pin!(17), Level::Low);
+    sleep(time);
+  }
 }

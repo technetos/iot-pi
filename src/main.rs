@@ -29,6 +29,12 @@ macro_rules! id {
     };
 }
 
+macro_rules! t {
+  ($time:expr) => {
+    Duration::from_millis($time)
+  };
+}
+
 mod led;
 
 fn print_info() {
@@ -41,7 +47,7 @@ fn print_info() {
 }
 
 fn setup() {
-    gpio!().set_mode(id!(18), Mode::Alt4); // PWM is 4
+    gpio!().set_mode(id!(17), Mode::Output); // PWM is 4
     gpio!().set_mode(id!(2), Mode::Input);
     gpio!().set_pullupdown(id!(2), PullUpDown::PullDown);
 }
@@ -59,14 +65,15 @@ fn main() {
         }
     });
 
-    let blinker = led::Blink::new();
-    blinker.configure();
 
-    let times = vec![1000, 500, 200, 100];
+    let times = vec![3000, 2000, 1000];
 
     loop {
-      times.iter().for_each(|time| {
-        blinker.execute(*time);
-      });
+      for i in &times {
+        gpio!().write(id!(17), Level::High);
+        sleep(t!(*i));
+        gpio!().write(id!(17), Level::Low);
+        sleep(t!(*i));
+      }
     }
 }

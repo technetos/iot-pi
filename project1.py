@@ -33,11 +33,13 @@ def setup():
     GPIO.add_event_detect(2, GPIO.FALLING, callback=button2, bouncetime=300)
     GPIO.add_event_detect(3, GPIO.FALLING, callback=button3, bouncetime=300)
     GPIO.setup(18, GPIO.OUT)
-    GPIO.setup(12, GPIO.OUT)
+    GPIO.setup(5, GPIO.OUT)
     GPIO.setup(24, GPIO.OUT)
 
+    print("Press Ctrl-C to exit")
+
 def button3(channel):
-    print("btn 3")
+    print("button 3 pressed")
     global button_action
     if button_action:
         button_action = False
@@ -45,27 +47,27 @@ def button3(channel):
         button_action = True
 
 def button2(channel):
-    print("btn 2")
+    print("button 2 pressed")
     global rate
     global value
     global button_action
 
     if button_action:
         if rate.is_paused():
-            print("un-setting blinker rate")
+            print("unlocking blinker rate")
             rate.start()
         else:
-            print("setting blinker rate")
+            print("locking blinker rate")
             rate.pause()
     else:
         if value.is_paused():
-            print("un-setting dimmer rate")
+            print("unlocking dimmer rate")
             value.start()
         else:
-            print("setting dimmer rate")
+            print("locking dimmer rate")
             value.pause()
 
-def dimmer_thread(run_event, pwm):
+def brightness_thread(run_event, pwm):
     while run_event.is_set():
         global value
         pwm.ChangeDutyCycle(value.next())
@@ -79,11 +81,9 @@ def temperature_thread(run_event, pwm24):
             GPIO.output(24, GPIO.LOW)
         else:
             if temp > 74:
-                pwm24.ChangeDutyCycle(95)
-            else:
-                pwm24.ChangeDutyCycle(10)
+                pwm24.ChangeDutyCycle(temp)
 
-        time.sleep(3)
+        time.sleep(5)
 
 class ValueSource:
     def __init__(self, values):
@@ -113,7 +113,7 @@ class ValueSource:
 
         return self.values[old_index]
         
-button_action = False
+button_action = True
 rate = ValueSource([x for x in range(6, 0, -1)])
 value = ValueSource([x for x in range(0, 100, 5)])
 
@@ -126,10 +126,10 @@ def main():
 
     run_event = threading.Event()
     run_event.set()
-    dimmer_led = threading.Thread(target = dimmer_thread, args = (run_event, pwm18))
+    brightness_led = threading.Thread(target = brightness_thread, args = (run_event, pwm18))
     temperature_led = threading.Thread(target = temperature_thread, args = (run_event, pwm24))
 
-    dimmer_led.start()
+    brightness_led.start()
     time.sleep(0.1)
     temperature_led.start()
 
@@ -137,22 +137,22 @@ def main():
         while True:
             global rate
             sleep_time = rate.next()
-            GPIO.output(12, GPIO.HIGH)
+            GPIO.output(5, GPIO.HIGH)
             time.sleep(sleep_time)
-            GPIO.output(12, GPIO.LOW)
+            GPIO.output(5, GPIO.LOW)
             time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         print("Exiting, please wait.")
         run_event.clear()
-        dimmer_led.join()
+        brightness_led.join()
         temperature_led.join()
         pwm18.stop()
         pwm24.stop()
         GPIO.remove_event_detect(2)
         GPIO.remove_event_detect(3)
         GPIO.cleanup()
-        print "threads successfully closed"
+        print("all threads successfully completed")
 
 if __name__ == '__main__':
     main()

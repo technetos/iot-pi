@@ -1,9 +1,0 @@
-[package]
-name = "rusty-iot-pi"
-version = "0.1.0"
-authors = ["technetos <mrgould93@gmail.com>"]
-edition = "2018"
-
-[dependencies]
-rppal = "0.8.1"
-lazy_static = "1.1.0"

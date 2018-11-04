@@ -7,7 +7,7 @@ use std::{
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, to_vec};
 
-static ADDRESS: &str = "192.168.1.12:5683";
+static ADDRESS: &str = "10.10.3.99:5683";
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Temperature {
@@ -46,12 +46,12 @@ fn request_handler(request: CoAPRequest) -> Option<CoAPResponse> {
     use coap::message::IsMessage;
 
     match request.get_method() {
-        &Method::Get if request.get_path() == "/sensors/temp" => {
+        &Method::Get if request.get_path() == "sensors/temp" => {
             println!(" => GET {}", request.get_path());
 
             // Convert the payload into json and then into a vector of
             // bytes to be sent over the wire.
-            let payload = to_vec(&json!(read_temperature())).unwrap();
+            let payload = to_vec(&json!(read_temperature().unwrap())).unwrap();
 
             request.response.map(|mut r| {
                 r.set_payload(payload);

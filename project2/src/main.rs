@@ -32,7 +32,7 @@ fn read_temperature<'r>() -> Result<Temperature, &'r str> {
         .map_err(|_| "invalid temperature data")?
         / 1000.0;
 
-    let fahrenheit = celsius * 1.8 + 33.8;
+    let fahrenheit = celsius * 1.8 + 32.0;
 
     println!("f: {:.2} c: {:.2}", fahrenheit, celsius);
 

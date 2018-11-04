@@ -1,0 +1,12 @@
+[package]
+name = "project2_client"
+version = "0.1.0"
+authors = ["technetos <mrgould93@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+coap = "0.7.1"
+serde = "1.0.80"
+serde_derive = "1.0.80"
+serde_json = "1.0.32"
+nb = "0.1.1"

@@ -26,7 +26,7 @@ fn main() {
                 println!("Current Temperature\n{}", payload);
                 break;
             }
-            Err(e) => println!("Request error: {:?}", e),
+            Err(e) => println!("No Data"),
         }
     }
 }

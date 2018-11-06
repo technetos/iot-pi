@@ -7,7 +7,7 @@ use std::{
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, to_vec};
 
-static ADDRESS: &str = "10.10.3.99:5683";
+static ADDRESS: &str = "192.168.1.12:5683";
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Temperature {
@@ -32,7 +32,7 @@ fn read_temperature<'r>() -> Result<Temperature, &'r str> {
         .map_err(|_| "invalid temperature data")?
         / 1000.0;
 
-    let fahrenheit = celsius * 1.8 + 32.0;
+    let fahrenheit = (celsius * 1.8) + 32.0;
 
     println!("f: {:.2} c: {:.2}", fahrenheit, celsius);
 

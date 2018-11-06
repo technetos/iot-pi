@@ -16,7 +16,7 @@ impl fmt::Display for Temperature {
 }
 
 fn main() {
-    let url = "coap://10.10.3.99:5683/sensors/temp";
+    let url = "coap://192.168.1.12:5683/sensors/temp";
     println!("Client request: {}", url);
 
     loop {
